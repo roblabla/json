@@ -4,6 +4,7 @@ use value::Value;
 use std::hash::Hash;
 use std::borrow::Borrow;
 use std::ops;
+use std::iter::{FromIterator, Extend};
 
 #[cfg(not(feature = "preserve_order"))]
 use std::collections::{BTreeMap, btree_map};
@@ -401,3 +402,23 @@ type MapValuesImpl<'a> = btree_map::Values<'a, String, Value>;
 type MapValuesImpl<'a> = linked_hash_map::Values<'a, String, Value>;
 
 delegate_iterator!((MapValues<'a>) => &'a Value);
+
+//////////////////////////////////////////////////////////////////////////////
+
+impl Extend<(String, Value)> for Map<String, Value> {
+    #[inline]
+    fn extend<T: IntoIterator<Item=(String, Value)>>(&mut self, iter: T) {
+        self.map.extend(iter)
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+impl FromIterator<(String, Value)> for Map<String, Value> {
+    #[inline]
+    fn from_iter<T: IntoIterator<Item=(String, Value)>>(iter: T) -> Self {
+        Map {
+            map: MapImpl::from_iter(iter)
+        }
+    }
+}
